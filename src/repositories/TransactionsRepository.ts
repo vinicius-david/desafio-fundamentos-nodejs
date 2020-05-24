@@ -14,15 +14,48 @@ class TransactionsRepository {
   }
 
   public all(): Transaction[] {
-    // TODO
+    return this.transactions;
   }
 
   public getBalance(): Balance {
-    // TODO
+    const incomes = this.transactions.filter(
+      transaction => transaction.type === 'income',
+    );
+    const outcomes = this.transactions.filter(
+      transaction => transaction.type === 'outcome',
+    );
+
+    const totalIncome = incomes.reduce(function sum(accumulator, currentValue) {
+      return accumulator + currentValue.value;
+    }, 0);
+    const totalOutcome = outcomes.reduce(function sum(
+      accumulator,
+      currentValue,
+    ) {
+      return accumulator + currentValue.value;
+    },
+    0);
+
+    const balance = {
+      income: totalIncome,
+      outcome: totalOutcome,
+      total: totalIncome - totalOutcome,
+    };
+
+    return balance;
   }
 
-  public create(): Transaction {
-    // TODO
+  public create(transaction: Transaction): Transaction {
+    const balance = this.getBalance();
+
+    if (
+      transaction.type === 'outcome' &&
+      balance.total - transaction.value < 0
+    ) {
+      throw Error('This transaction is above your limit.');
+    }
+    this.transactions.push(transaction);
+    return transaction;
   }
 }
 
